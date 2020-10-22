@@ -1,0 +1,9 @@
+pandas
+numpy
+requests
+boto3
+s3fs
+tqdm
+ccxt
+pycoingecko
+matplotlib
