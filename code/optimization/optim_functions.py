@@ -1,7 +1,8 @@
 import pandas as pd
-import numpy as np
 import boto3
-from datetime import date
+import datetime
+import numpy as np
+from io import StringIO
 
 bucket = 'insula-optim'
 folder = 'pairs-data/'
@@ -13,15 +14,15 @@ def loading_pairs_data(optim_env, begin_date):
     for i, object_summary in enumerate(s3_bucket.objects.filter(Prefix="pairs-data/")):
         if i>0:
             key = str(object_summary.key)
-            csv_obj = client.get_object(Bucket=bucket, Key=key)
-            body = csv_obj['Body']
-            csv_string = body.read().decode('utf-8')
+            csv_obj = s3.Object(bucket, key)
+            csv_string = csv_obj.get()['Body'].read().decode('utf-8')
             df = pd.read_csv(StringIO(csv_string))
+            df = df[df['symbol'].isin(optim_env)]
             if i == 1 :
-                data = data[data['symbol'].isin(optim_env)]
+                data = df
+                #print(data)
             else:
-                data_add = pd.read_csv(path)
-                data_add = data_add[data_add['symbol'].isin(optim_env)]
+                data_add = df
                 data = pd.concat([data, data_add], axis=0)
 
     data = data.reset_index().drop(columns=['Unnamed: 0', 'index'])  
@@ -70,7 +71,7 @@ def compute_markowitz_optim(window, rebalance_period, nportfolio, optim_env, dat
     # Matrix algebra to get variance-covariance matrix
     cov_m = np.dot(np.transpose(xr), xr) / n
     # Compute asset correlation matrix (informative only)
-    corr_m = cov_m / np.dot(np.transpose(stds), stds)
+    #corr_m = cov_m / np.dot(np.transpose(stds), stds)
 
     # Define portfolio optimization parameters
     n_portfolios = nportfolio
