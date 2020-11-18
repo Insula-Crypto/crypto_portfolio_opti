@@ -12,7 +12,6 @@ The following parameters can be changed directly on the AWS interface:
 -  **optim_env** = ['BNT/ETH','SNT/ETH','ENJ/ETH''LEND/ETH','LRC/ETH','POWR/ETH'] # The environment on which we optimize the portfolio
 - **nportfolio** = 10000 # Number of portfolio simulations 
 - **window** = 28 # Set the time window that will be used to compute expected return and asset correlations
-- **rebalance_period** = 14 # Set the number of days between each portfolio rebalancing
-- **nb_days** = 200 # Number of days kept in the dataframe for the study (from today's date)
+- **nb_days** = 200 # Number of days kept in the dataframe for the study - nb_days have to be superior to window
 
 
