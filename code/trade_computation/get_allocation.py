@@ -89,7 +89,6 @@ def loading_pairs_data(optim_env, begin_date):
             df = df[df['symbol'].isin(optim_env)]
             if i == 1 :
                 data = df
-                #print(data)
             else:
                 data_add = df
                 data = pd.concat([data, data_add], axis=0)

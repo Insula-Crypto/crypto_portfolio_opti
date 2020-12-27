@@ -3,6 +3,8 @@ import boto3
 import datetime
 import numpy as np
 from io import StringIO
+from matplotlib import pyplot as plt
+import io 
 
 bucket = 'insula-optim'
 folder = 'pairs-data/'
@@ -17,10 +19,10 @@ def loading_pairs_data(optim_env, begin_date):
             csv_obj = s3.Object(bucket, key)
             csv_string = csv_obj.get()['Body'].read().decode('utf-8')
             df = pd.read_csv(StringIO(csv_string))
-            df = df[df['symbol'].isin(optim_env)]
+            df = df[df['symbol'].str.replace('_', '/').isin(optim_env)]
+            df['symbol'] = df['symbol'].str.replace('_', '/')
             if i == 1 :
                 data = df
-                #print(data)
             else:
                 data_add = df
                 data = pd.concat([data, data_add], axis=0)
@@ -50,7 +52,7 @@ def transformation_into_optim_format(data, optim_env):
     return data_optim
 
 
-def compute_markowitz_optim(window, rebalance_period, nportfolio, optim_env, data):
+def compute_markowitz_optim(window, nportfolio, optim_env, data):
     nassets = len(optim_env) + 1 # Account for the ETH/ETH pair
     n = window
     prices = data
@@ -105,4 +107,36 @@ def compute_markowitz_optim(window, rebalance_period, nportfolio, optim_env, dat
     min_vol_port = results_frame.iloc[results_frame['stdev'].idxmin()]
     
     return results_frame, max_sharpe_port, min_vol_port
+
+def plot_portfolio_simulation(results_frame, max_sharpe_port, min_vol_port):
+    # create scatter plot coloured by Sharpe Ratio
+    plt.scatter(results_frame.stdev,
+                results_frame.r,
+                c=results_frame.sharpe,
+                cmap='RdYlGn')
+    plt.xlabel('Volatility')
+    plt.ylabel('Returns')
+    plt.colorbar()
+
+    # plot blue circle to highlight position of portfolio
+    # with highest Sharpe Ratio
+    plt.scatter(max_sharpe_port[1],
+                max_sharpe_port[0],
+                marker='o',
+                color='b',
+                s=100,
+               label='Max Sharpe')
     
+    # plot green circle to highlight position of portfolio
+    # with lowest variance
+    plt.scatter(min_vol_port[1],
+                min_vol_port[0],
+                marker='o',
+                color='purple',
+                s=100,
+               label='Min Volatility')
+    plt.legend()
+    plt.title(f'Portfolio Simulations ({len(results_frame)})')
+
+    return plt.show()
+
