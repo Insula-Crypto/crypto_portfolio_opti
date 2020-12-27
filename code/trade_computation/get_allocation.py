@@ -36,7 +36,11 @@ def get_malta_allocation():
     df['Value'] = 100*(df['Value']/df['Value'].sum())
     df = df.set_index('Symbol')
     
-    return df
+    df_real = pd.DataFrame({'Symbol': assets,'Value': nav}, dtype=float)
+    df_real = df_real.set_index('Symbol')
+    
+    
+    return df, df_real
    
     
 def get_anastasia_allocation():

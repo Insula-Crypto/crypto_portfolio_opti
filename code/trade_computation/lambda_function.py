@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     # Load the current allocation for the right fund
     print('[INFO] Loading current allocations from requests to the fund')
     if fund == 'insula': current = get_insula_allocation()
-    elif fund == 'malta': current = get_malta_allocation()
+    elif fund == 'malta': current, current_real = get_malta_allocation()
     elif fund == 'anastasia': current = get_anastasia_allocation()
     
     # Merge the 2 files
@@ -51,6 +51,13 @@ def lambda_handler(event, context):
     csv_buffer = StringIO()
     buy.sort_values(by='Symbol').to_csv(csv_buffer)
     results_object.put(Body=csv_buffer.getvalue())
+    
+    current_allocation_key = folder + 'current_allocation_' + str(today)[:10] +'.csv'
+    results_object = s3.Object(bucket, current_allocation_key)
+    csv_buffer = StringIO()
+    current_real.sort_values(by='Symbol').to_csv(csv_buffer)
+    results_object.put(Body=csv_buffer.getvalue())
+    
     
     print('[INFO] WELL DONE, IT IS FINISHED !')
     print('Path to the output results: ' + bucket + '/' + results_key)
